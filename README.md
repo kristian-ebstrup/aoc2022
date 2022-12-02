@@ -18,4 +18,4 @@ or
 
     aoc2022 1 1
 
-The binary is, of course, cleaner to look at as it does not contain compiler output.
+The binary is, of course, cleaner to look at as it does not contain compiler output. The binary is found in `aoc2022/target/debug/aoc2022/`, and through clap has an auto-generated help flag, `--help`.

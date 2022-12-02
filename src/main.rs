@@ -19,7 +19,7 @@ fn main() -> io::Result<()> {
     let day = match args.value_of("day") {
         Some(s) => match s.parse::<u8>() {
             Ok(d) => d,
-            Err(_e) => panic!("Error parsing the part!"),
+            Err(_e) => panic!("Error parsing the day!"),
         },
         None => panic!("No or invalid day input!"),
     };
@@ -27,7 +27,7 @@ fn main() -> io::Result<()> {
     let part = match args.value_of("part") {
         Some(s) => match s.parse::<u8>() {
             Ok(p) => p,
-            Err(_e) => panic!("Error parsing the day!"),
+            Err(_e) => panic!("Error parsing the part!"),
         },
         None => panic!("No or invalid part input!"),
     };

@@ -5,6 +5,7 @@ use std::io;
 use std::io::prelude::*;
 
 mod day01;
+mod day02;
 
 fn main() -> io::Result<()> {
     let args = App::new("Advent of Code 2022")
@@ -37,6 +38,7 @@ fn main() -> io::Result<()> {
     // run the day
     match day {
         1 => day01::solve(input, part)?,
+        2 => day02::solve(input, part)?,
         _ => unimplemented!(),
     }
 

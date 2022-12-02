@@ -2,7 +2,6 @@ extern crate clap;
 
 use clap::{App, Arg};
 use std::io;
-use std::io::prelude::*;
 
 mod day01;
 mod day02;
@@ -33,7 +32,7 @@ fn main() -> io::Result<()> {
     };
 
     // get input file for the day
-    let input: Box<dyn BufRead> = Box::new(aoc2022::input_file(day)?);
+    let input = aoc2022::input_file(day)?;
 
     // run the day
     match day {

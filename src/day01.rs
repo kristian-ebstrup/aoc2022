@@ -9,13 +9,26 @@ pub struct Elf {
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     let elves = parse(input)?;
 
+    println!("# ---- DAY 01 ---- #");
+    let now = std::time::Instant::now();
     let solution = match part {
-        1 => part_1(elves),
-        2 => part_2(elves),
+        0 => (part_1(&elves), part_2(&elves)),
+        1 => (part_1(&elves), None),
+        2 => (None, part_2(&elves)),
         _ => unimplemented!(),
     };
+    let time = now.elapsed().as_micros();
 
-    println!("{:?}", solution.expect("No solution"));
+    match solution.0 {
+        Some(x) => println!("Part 1: {}", x),
+        None => println!(),
+    }
+    match solution.1 {
+        Some(x) => println!("Part 2: {}", x),
+        None => println!(),
+    }
+
+    println!("Time elapsed: {} µs", time);
 
     Ok(())
 }
@@ -49,11 +62,11 @@ fn parse(input: impl BufRead) -> io::Result<Vec<Elf>> {
     Ok(elves)
 }
 
-fn part_1(elves: Vec<Elf>) -> Option<i32> {
+fn part_1(elves: &Vec<Elf>) -> Option<i32> {
     /* Find the most calories carried! */
     let mut most_calories: i32 = 0;
 
-    for elf in elves.into_iter() {
+    for elf in elves.iter() {
         let sum_of_calories: i32 = elf.inventory.iter().sum();
 
         if sum_of_calories >= most_calories {
@@ -64,11 +77,11 @@ fn part_1(elves: Vec<Elf>) -> Option<i32> {
     Some(most_calories)
 }
 
-fn part_2(elves: Vec<Elf>) -> Option<i32> {
+fn part_2(elves: &Vec<Elf>) -> Option<i32> {
     /* Find the top three elves carrying the most calories! */
     let mut most_calories: Vec<i32> = vec![0, 0, 0];
 
-    for elf in elves.into_iter() {
+    for elf in elves.iter() {
         let sum_of_calories: i32 = elf.inventory.iter().sum();
 
         if most_calories.iter().any(|&x| x <= sum_of_calories) {

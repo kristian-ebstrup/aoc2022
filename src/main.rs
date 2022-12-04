@@ -6,6 +6,7 @@ use std::io;
 mod day01;
 mod day02;
 mod day03;
+mod day04;
 
 fn main() -> io::Result<()> {
     let args = App::new("Advent of Code 2022")
@@ -40,6 +41,7 @@ fn main() -> io::Result<()> {
         1 => day01::solve(input, part)?,
         2 => day02::solve(input, part)?,
         3 => day03::solve(input, part)?,
+        4 => day04::solve(input, part)?,
         _ => unimplemented!(),
     }
 

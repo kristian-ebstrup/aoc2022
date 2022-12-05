@@ -2,15 +2,27 @@ use std::io;
 use std::io::prelude::*;
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
-    let strategy = parse(input)?;
+    let parsed_input = parse(input)?;
 
+    let now = std::time::Instant::now();
     let solution = match part {
-        1 => part_1(strategy),
-        2 => part_2(strategy),
+        0 => (part_1(&parsed_input), part_2(&parsed_input)),
+        1 => (part_1(&parsed_input), None),
+        2 => (None, part_2(&parsed_input)),
         _ => unimplemented!(),
     };
+    let time = now.elapsed().as_micros();
 
-    println!("{:?}", solution.expect("No solution"));
+    match solution.0 {
+        Some(x) => println!("Part 1: {}", x),
+        None => println!(),
+    }
+    match solution.1 {
+        Some(x) => println!("Part 2: {}", x),
+        None => println!(),
+    }
+
+    println!("Time elapsed: {} µs", time);
 
     Ok(())
 }
@@ -28,7 +40,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
     Ok(strategy)
 }
 
-fn part_1(strategy: Vec<String>) -> Option<i32> {
+fn part_1(strategy: &Vec<String>) -> Option<i32> {
     /* Find the score of the employed strategy
      * (A, B, C) = (X, Y, Z) -> Rock, Paper, Scissors
      * such that
@@ -80,7 +92,7 @@ fn part_1(strategy: Vec<String>) -> Option<i32> {
     Some(score)
 }
 
-fn part_2(strategy: Vec<String>) -> Option<i32> {
+fn part_2(strategy: &Vec<String>) -> Option<i32> {
     /* Similar to part 1, but now
      * (X, Y, Z) -> Lose, Draw, Win
      * and the shape and points need to be tallied based on that. */

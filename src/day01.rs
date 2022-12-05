@@ -9,7 +9,6 @@ pub struct Elf {
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     let elves = parse(input)?;
 
-    println!("# ---- DAY 01 ---- #");
     let now = std::time::Instant::now();
     let solution = match part {
         0 => (part_1(&elves), part_2(&elves)),

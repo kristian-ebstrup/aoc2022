@@ -2,15 +2,27 @@ use std::io;
 use std::io::prelude::*;
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
-    let sections = parse(input)?;
+    let parsed_input = parse(input)?;
 
+    let now = std::time::Instant::now();
     let solution = match part {
-        1 => part_1(sections),
-        2 => part_2(sections),
+        0 => (part_1(&parsed_input), part_2(&parsed_input)),
+        1 => (part_1(&parsed_input), None),
+        2 => (None, part_2(&parsed_input)),
         _ => unimplemented!(),
     };
+    let time = now.elapsed().as_micros();
 
-    println!("{:?}", solution.expect("No solution"));
+    match solution.0 {
+        Some(x) => println!("Part 1: {}", x),
+        None => println!(),
+    }
+    match solution.1 {
+        Some(x) => println!("Part 2: {}", x),
+        None => println!(),
+    }
+
+    println!("Time elapsed: {} µs", time);
 
     Ok(())
 }
@@ -33,7 +45,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<Vec<i32>>> {
     Ok(sections)
 }
 
-fn part_1(ranges: Vec<Vec<i32>>) -> Option<i32> {
+fn part_1(ranges: &Vec<Vec<i32>>) -> Option<i32> {
     let mut n_contained_ranges: i32 = 0;
 
     // for each set of section ranges, check if either range
@@ -50,7 +62,7 @@ fn part_1(ranges: Vec<Vec<i32>>) -> Option<i32> {
     Some(n_contained_ranges)
 }
 
-fn part_2(ranges: Vec<Vec<i32>>) -> Option<i32> {
+fn part_2(ranges: &Vec<Vec<i32>>) -> Option<i32> {
     let mut n_overlapping_ranges: i32 = 0;
 
     // for each set of section ranges, check if either range

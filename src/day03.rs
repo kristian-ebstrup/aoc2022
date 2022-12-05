@@ -3,15 +3,27 @@ use std::io;
 use std::io::prelude::*;
 
 pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
-    let rucksacks = parse(input)?;
+    let parsed_input = parse(input)?;
 
+    let now = std::time::Instant::now();
     let solution = match part {
-        1 => part_1(rucksacks),
-        2 => part_2(rucksacks),
+        0 => (part_1(&parsed_input), part_2(&parsed_input)),
+        1 => (part_1(&parsed_input), None),
+        2 => (None, part_2(&parsed_input)),
         _ => unimplemented!(),
     };
+    let time = now.elapsed().as_micros();
 
-    println!("{:?}", solution.expect("No solution"));
+    match solution.0 {
+        Some(x) => println!("Part 1: {}", x),
+        None => println!(),
+    }
+    match solution.1 {
+        Some(x) => println!("Part 2: {}", x),
+        None => println!(),
+    }
+
+    println!("Time elapsed: {} µs", time);
 
     Ok(())
 }
@@ -28,7 +40,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
     Ok(rucksacks)
 }
 
-fn part_1(rucksacks: Vec<String>) -> Option<i32> {
+fn part_1(rucksacks: &Vec<String>) -> Option<i32> {
     /* Each rucksack has two compartments of equal size,
      * i.e. the first half of the line is the contents of the
      * first compartment, and the second half represents the
@@ -67,7 +79,7 @@ fn part_1(rucksacks: Vec<String>) -> Option<i32> {
     Some(priority_sum)
 }
 
-fn part_2(rucksacks: Vec<String>) -> Option<i32> {
+fn part_2(rucksacks: &Vec<String>) -> Option<i32> {
     /* group the rucksack in sets of three, and find
      * the only item that occurs in all three sets:
      * this is the badge, and defines the priority value */
@@ -75,10 +87,8 @@ fn part_2(rucksacks: Vec<String>) -> Option<i32> {
 
     // define counter and map outside loop
     let mut counter: u8 = 0;
-    let mut reset_counter: u8 = 0;
     let mut map: HashMap<char, u8> = HashMap::new();
 
-    println!("{}", rucksacks.len());
     for rucksack in rucksacks.into_iter() {
         // advance counter, and create a map of banned chars to avoid counting the same
         // char twice in the same rucksack
@@ -110,10 +120,8 @@ fn part_2(rucksacks: Vec<String>) -> Option<i32> {
                 }
             }
             counter = 0;
-            reset_counter += 1;
         }
     }
-    println!("{}", reset_counter);
 
     Some(priority_sum)
 }

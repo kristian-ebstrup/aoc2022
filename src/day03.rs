@@ -1,4 +1,5 @@
-use std::collections::HashMap;
+use itertools::Itertools;
+use std::collections::HashSet;
 use std::io;
 use std::io::prelude::*;
 
@@ -31,12 +32,11 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
 fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
     /* each line corresponds to a rucksack, where each character
      * is a case-sensitive item. */
-    let mut rucksacks: Vec<String> = Vec::new();
+    let rucksacks: Vec<String> = input
+        .lines()
+        .map(|l| l.expect("Failed to read line").chars().collect())
+        .collect();
 
-    for line in input.lines() {
-        let s = line?;
-        rucksacks.push(s);
-    }
     Ok(rucksacks)
 }
 
@@ -51,29 +51,18 @@ fn part_1(rucksacks: &Vec<String>) -> Option<i32> {
 
     for rucksack in rucksacks.into_iter() {
         let (left, right) = rucksack.split_at(rucksack.len() / 2);
-        // build HashMaps for each compartment
-        let mut map_left: HashMap<char, u8> = HashMap::new();
-        for c in left.chars() {
-            map_left.insert(c, 1);
-        }
+        // build HashSets for each compartment
+        let set_l: HashSet<char> = HashSet::from_iter(left.chars());
+        let set_r: HashSet<char> = HashSet::from_iter(right.chars());
 
-        let mut map_right: HashMap<char, u8> = HashMap::new();
-        for c in right.chars() {
-            map_right.insert(c, 1);
-        }
+        // check intersection
+        let intersection: char = *set_l.intersection(&set_r).next().unwrap();
 
-        // extract keys existing in both maps
-        for key in map_left.keys() {
-            if map_right.contains_key(key) {
-                let shared_key = key;
-                // convert to ASCII value, and correct to get priority value
-                if key.is_uppercase() {
-                    priority_sum += *shared_key as i32 - (64 - 26);
-                } else {
-                    priority_sum += *shared_key as i32 - 96;
-                }
-            }
-        }
+        // match to whether it is uppercase, and compute priority value from there
+        priority_sum += match intersection.is_uppercase() {
+            true => intersection as i32 - (65 - 27),
+            false => intersection as i32 - 96,
+        };
     }
 
     Some(priority_sum)
@@ -85,42 +74,22 @@ fn part_2(rucksacks: &Vec<String>) -> Option<i32> {
      * this is the badge, and defines the priority value */
     let mut priority_sum: i32 = 0;
 
-    // define counter and map outside loop
-    let mut counter: u8 = 0;
-    let mut map: HashMap<char, u8> = HashMap::new();
+    let mut sacks = rucksacks.iter().tuples();
+    while let Some((one, two, three)) = sacks.next() {
+        // define three HashSets for the three sacks
+        let sack_1: HashSet<char> = HashSet::from_iter(one.chars());
+        let sack_2: HashSet<char> = HashSet::from_iter(two.chars());
+        let sack_3: HashSet<char> = HashSet::from_iter(three.chars());
 
-    for rucksack in rucksacks.into_iter() {
-        // advance counter, and create a map of banned chars to avoid counting the same
-        // char twice in the same rucksack
-        counter += 1;
-        let mut banned_chars: HashMap<char, u8> = HashMap::new();
+        // compare sack 1 and 2 first
+        let intersection_1: HashSet<char> = sack_1.intersection(&sack_2).map(|&x| x).collect();
+        let intersection_2: char = *intersection_1.intersection(&sack_3).next().unwrap();
 
-        for c in rucksack.chars() {
-            if !banned_chars.contains_key(&c) {
-                // if key exists, increase by one; else, insert key and value = 1.
-                match map.get(&c) {
-                    Some(v) => map.insert(c, v + 1),
-                    None => map.insert(c, 1),
-                };
-
-                banned_chars.insert(c, 1);
-            }
-        }
-
-        if counter == 3 {
-            for (key, val) in map.drain() {
-                if val == 3 {
-                    let badge = key;
-                    // convert to ASCII value, and correct to get priority value
-                    if badge.is_uppercase() {
-                        priority_sum += badge as i32 - (64 - 26);
-                    } else {
-                        priority_sum += badge as i32 - 96;
-                    }
-                }
-            }
-            counter = 0;
-        }
+        // match to whether it is uppercase, and compute priority value from there
+        priority_sum += match intersection_2.is_uppercase() {
+            true => intersection_2 as i32 - (65 - 27),
+            false => intersection_2 as i32 - 96,
+        };
     }
 
     Some(priority_sum)

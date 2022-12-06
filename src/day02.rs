@@ -50,37 +50,25 @@ fn part_1(strategy: &Vec<String>) -> Option<i32> {
     let mut score: i32 = 0;
 
     for game in strategy.into_iter() {
-        // naive implementation
-        let mut plays = game.split_whitespace();
-        let opposing_play = plays.next()?;
-        let own_play = plays.next()?;
+        let (opposing_play, own_play) = game.split_whitespace().next_tuple().unwrap();
 
-        match own_play {
-            "X" => {
-                score += 1;
-                match opposing_play {
-                    "A" => score += 3,
-                    "C" => score += 6,
-                    _ => (),
-                }
-            }
-            "Y" => {
-                score += 2;
-                match opposing_play {
-                    "A" => score += 6,
-                    "B" => score += 3,
-                    _ => (),
-                }
-            }
-            "Z" => {
-                score += 3;
-                match opposing_play {
-                    "B" => score += 6,
-                    "C" => score += 3,
-                    _ => (),
-                }
-            }
-            &_ => (),
+        score += match own_play {
+            "X" => match opposing_play {
+                "A" => 4,
+                "C" => 7,
+                _ => 1,
+            },
+            "Y" => match opposing_play {
+                "A" => 8,
+                "B" => 5,
+                _ => 2,
+            },
+            "Z" => match opposing_play {
+                "B" => 9,
+                "C" => 6,
+                _ => 3,
+            },
+            &_ => 0,
         }
     }
 
@@ -96,39 +84,31 @@ fn part_2(strategy: &Vec<String>) -> Option<i32> {
 
     for game in strategy.into_iter() {
         // naive implementation
-        let mut plays = game.split_whitespace();
-        let opposing_play = plays.next()?;
-        let own_play = plays.next()?;
+        let (opposing_play, own_play) = game.split_whitespace().next_tuple().unwrap();
 
-        match own_play {
+        score += match own_play {
             // lose
             "X" => match opposing_play {
-                "A" => score += 3,
-                "B" => score += 1,
-                "C" => score += 2,
-                _ => (),
+                "A" => 3,
+                "B" => 1,
+                "C" => 2,
+                _ => 0,
             },
             // draw
-            "Y" => {
-                score += 3;
-                match opposing_play {
-                    "A" => score += 1,
-                    "B" => score += 2,
-                    "C" => score += 3,
-                    _ => (),
-                }
-            }
+            "Y" => match opposing_play {
+                "A" => 4,
+                "B" => 5,
+                "C" => 6,
+                _ => 0,
+            },
             // win
-            "Z" => {
-                score += 6;
-                match opposing_play {
-                    "A" => score += 2,
-                    "B" => score += 3,
-                    "C" => score += 1,
-                    _ => (),
-                }
-            }
-            &_ => (),
+            "Z" => match opposing_play {
+                "A" => 8,
+                "B" => 9,
+                "C" => 7,
+                _ => 0,
+            },
+            &_ => 0,
         }
     }
 

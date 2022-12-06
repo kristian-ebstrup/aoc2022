@@ -34,36 +34,30 @@ fn parse(input: impl BufRead) -> io::Result<String> {
     Ok(input.lines().next().unwrap()?)
 }
 
-fn part_1(buffer: &String) -> Option<i32> {
+fn part_1(buffer: &String) -> Option<usize> {
     let slice: Vec<char> = buffer.clone().chars().collect_vec();
 
-    let mut counter: i32 = 3;
-    for window in slice.windows(4) {
-        counter += 1;
-
-        let set: HashSet<&char> = HashSet::from_iter(window.iter());
-
-        if set.len() == 4 {
-            return Some(counter);
-        }
-    }
-
-    None
+    let n: usize = 4;
+    Some(
+        slice
+            .windows(n)
+            .map(|x| HashSet::<char>::from_iter(x.to_owned()).len() == n)
+            .position(|x| x)
+            .unwrap()
+            + n,
+    )
 }
 
-fn part_2(buffer: &String) -> Option<i32> {
+fn part_2(buffer: &String) -> Option<usize> {
     let slice: Vec<char> = buffer.clone().chars().collect_vec();
 
-    let mut counter: i32 = 13;
-    for window in slice.windows(14) {
-        counter += 1;
-
-        let set: HashSet<&char> = HashSet::from_iter(window.iter());
-
-        if set.len() == 14 {
-            return Some(counter);
-        }
-    }
-
-    None
+    let n: usize = 14;
+    Some(
+        slice
+            .windows(n)
+            .map(|x| HashSet::<char>::from_iter(x.to_owned()).len() == n)
+            .position(|x| x)
+            .unwrap()
+            + n,
+    )
 }

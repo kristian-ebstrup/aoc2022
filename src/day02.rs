@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::io;
 use std::io::prelude::*;
 
@@ -30,14 +31,8 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
 fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
     /* each line consists of a string of two chars separated by a whitespace
      * and each line will simply be read into a vector */
-    let mut strategy: Vec<String> = Vec::new();
 
-    for line in input.lines() {
-        let s: String = line?;
-
-        strategy.push(s)
-    }
-    Ok(strategy)
+    Ok(input.lines().map(|x| x.unwrap()).collect_vec())
 }
 
 fn part_1(strategy: &Vec<String>) -> Option<i32> {

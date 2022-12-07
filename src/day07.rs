@@ -36,7 +36,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
         .collect())
 }
 
-fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
+fn get_directory_sizes(terminal_output: &Vec<String>) -> Option<Vec<u64>> {
     let mut directories: Vec<u64> = Vec::new();
     let mut active_directories: Vec<usize> = Vec::new();
 
@@ -75,14 +75,12 @@ fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
         }
     }
 
-    println!(
-        "{:?}",
-        directories
-            .clone()
-            .into_iter()
-            .filter(|&x| x <= 100000)
-            .collect::<Vec<u64>>()
-    );
+    Some(directories)
+}
+
+fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
+    let directories: Vec<u64> = get_directory_sizes(terminal_output).unwrap();
+
     Some(
         directories
             .into_iter()
@@ -91,6 +89,18 @@ fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
     )
 }
 
-fn part_2(terminal_output: &Vec<String>) -> Option<usize> {
-    unimplemented!()
+fn part_2(terminal_output: &Vec<String>) -> Option<u64> {
+    let directories: Vec<u64> = get_directory_sizes(terminal_output).unwrap();
+
+    let available_space: u64 = 70000000;
+    let required_space: u64 = 30000000;
+
+    let current_space: u64 = *directories.first().unwrap();
+    let unused_space: u64 = available_space - current_space;
+    let space_to_be_found: u64 = required_space - unused_space;
+
+    directories
+        .into_iter()
+        .filter(|&x| x >= space_to_be_found)
+        .min()
 }

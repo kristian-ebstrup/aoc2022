@@ -9,6 +9,7 @@ mod day03;
 mod day04;
 mod day05;
 mod day06;
+mod day07;
 
 fn main() -> io::Result<()> {
     let args = App::new("Advent of Code 2022")
@@ -47,6 +48,7 @@ fn main() -> io::Result<()> {
         4 => day04::solve(input, part)?,
         5 => day05::solve(input, part)?,
         6 => day06::solve(input, part)?,
+        7 => day07::solve(input, part)?,
         _ => unimplemented!(),
     }
 

@@ -48,16 +48,11 @@ fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
                 match split[1] {
                     "cd" => {
                         if split[2] == ".." {
-                            let act_last = active_directories.last().unwrap().clone();
                             let cascade = directories[active_directories.pop().unwrap()].clone();
-                            println!("{:?}, POP: [{:?}]", active_directories, act_last);
-                            for i in active_directories.iter() {
-                                directories[*i] += cascade;
-                            }
+                            directories[*active_directories.last().unwrap()] += cascade;
                         } else {
                             directories.push(0);
                             active_directories.push(directories.len() - 1);
-                            println!("{:?}", active_directories);
                         }
                     }
                     _ => (),
@@ -74,8 +69,9 @@ fn part_1(terminal_output: &Vec<String>) -> Option<u64> {
     // purge active_directories to include the remaining sizes
     while !active_directories.is_empty() {
         let cascade = directories[active_directories.pop().unwrap()].clone();
-        for i in active_directories.iter() {
-            directories[*i] += cascade;
+        match active_directories.last() {
+            Some(&i) => directories[i] += cascade,
+            None => (),
         }
     }
 

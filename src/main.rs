@@ -11,14 +11,15 @@ mod day05;
 mod day06;
 mod day07;
 mod day08;
+mod day09;
 
 fn main() -> io::Result<()> {
     let args = App::new("Advent of Code 2022")
         .version("0.1.0")
         .author("K. Ebstrup <k.ebstrup@gmail.com>")
         .about("My solution code to the Advent of Code 2022")
-        .arg(Arg::new("day").required(true))
-        .arg(Arg::new("part").required(true))
+        .arg(Arg::new("day").required(false))
+        .arg(Arg::new("part").required(false))
         .get_matches();
 
     let day = match args.value_of("day") {
@@ -26,7 +27,7 @@ fn main() -> io::Result<()> {
             Ok(d) => d,
             Err(_e) => panic!("Error parsing the day!"),
         },
-        None => panic!("No or invalid day input!"),
+        None => 0,
     };
 
     let part = match args.value_of("part") {
@@ -34,12 +35,12 @@ fn main() -> io::Result<()> {
             Ok(p) => p,
             Err(_e) => panic!("Error parsing the part!"),
         },
-        None => panic!("No or invalid part input!"),
+        None => 0,
     };
 
     // run the day
     let mut days_to_run: Vec<u8> = match day {
-        0 => (1..8).map(|i| i).collect::<Vec<u8>>(),
+        0 => (1..9).map(|i| i).collect::<Vec<u8>>(),
         _ => vec![day],
     };
 
@@ -59,6 +60,7 @@ fn main() -> io::Result<()> {
             6 => day06::solve(input, part)?,
             7 => day07::solve(input, part)?,
             8 => day08::solve(input, part)?,
+            9 => day09::solve(input, part)?,
             _ => unimplemented!(),
         }
         println!("");

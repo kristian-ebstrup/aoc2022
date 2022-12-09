@@ -37,21 +37,31 @@ fn main() -> io::Result<()> {
         None => panic!("No or invalid part input!"),
     };
 
-    // get input file for the day
-    let input = aoc2022::input_file(day)?;
-
     // run the day
-    println!("# ---- DAY {:0>2} ---- #", day);
-    match day {
-        1 => day01::solve(input, part)?,
-        2 => day02::solve(input, part)?,
-        3 => day03::solve(input, part)?,
-        4 => day04::solve(input, part)?,
-        5 => day05::solve(input, part)?,
-        6 => day06::solve(input, part)?,
-        7 => day07::solve(input, part)?,
-        8 => day08::solve(input, part)?,
-        _ => unimplemented!(),
+    let mut days_to_run: Vec<u8> = match day {
+        0 => (1..8).map(|i| i).collect::<Vec<u8>>(),
+        _ => vec![day],
+    };
+
+    while !days_to_run.is_empty() {
+        let day_to_run = days_to_run.pop().unwrap();
+
+        // get input file for the day
+        let input = aoc2022::input_file(day_to_run)?;
+
+        println!("# ---- DAY {:0>2} ---- #", day_to_run);
+        match day_to_run {
+            1 => day01::solve(input, part)?,
+            2 => day02::solve(input, part)?,
+            3 => day03::solve(input, part)?,
+            4 => day04::solve(input, part)?,
+            5 => day05::solve(input, part)?,
+            6 => day06::solve(input, part)?,
+            7 => day07::solve(input, part)?,
+            8 => day08::solve(input, part)?,
+            _ => unimplemented!(),
+        }
+        println!("");
     }
 
     Ok(())

@@ -1,3 +1,4 @@
+use itertools::Itertools;
 use std::io;
 use std::io::prelude::*;
 
@@ -116,6 +117,57 @@ fn part_1(grid: &Vec<Vec<u8>>) -> Option<u64> {
     Some(visible_trees)
 }
 
-fn part_2(grid: &Vec<Vec<u8>>) -> Option<u64> {
-    unimplemented!()
+fn part_2(grid: &Vec<Vec<u8>>) -> Option<u32> {
+    let tree_grid = TreeGrid::new(grid);
+
+    let grid_height: usize = tree_grid.get_height();
+    let grid_width: usize = tree_grid.get_width();
+
+    let mut scenic_scores: Vec<u32> = Vec::new();
+
+    // iterate through all trees
+    for i in 1..(grid_width - 1) {
+        for j in 1..(grid_height - 1) {
+            let mut scenic_score: Vec<u32> = vec![0; 4];
+
+            // check horizontal
+            let row_left = tree_grid.rows[i][0..j].iter().rev();
+
+            for neighbour in row_left {
+                scenic_score[0] += 1;
+                if neighbour >= &grid[i][j] {
+                    break;
+                }
+            }
+
+            let row_right = tree_grid.rows[i][(j + 1)..].iter();
+            for neighbour in row_right {
+                scenic_score[1] += 1;
+                if neighbour >= &grid[i][j] {
+                    break;
+                }
+            }
+
+            // check vertical
+            let col_top = tree_grid.cols[j][0..i].iter().rev();
+            for neighbour in col_top {
+                scenic_score[2] += 1;
+                if neighbour >= &grid[i][j] {
+                    break;
+                }
+            }
+
+            let col_bottom = tree_grid.cols[j][i + 1..].iter();
+            for neighbour in col_bottom {
+                scenic_score[3] += 1;
+                if neighbour >= &grid[i][j] {
+                    break;
+                }
+            }
+
+            scenic_scores.push(scenic_score.into_iter().product());
+        }
+    }
+
+    Some(scenic_scores.into_iter().max().unwrap())
 }

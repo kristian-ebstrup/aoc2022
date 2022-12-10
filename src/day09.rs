@@ -36,6 +36,21 @@ enum Move {
     Right(i32),
 }
 
+impl Move {
+    fn from(s: &(String, String)) -> Move {
+        let direction = s.0.as_str();
+        let steps = s.1.parse::<i32>().unwrap();
+
+        match direction {
+            "U" => Move::Up(steps),
+            "D" => Move::Down(steps),
+            "L" => Move::Left(steps),
+            "R" => Move::Right(steps),
+            _ => panic!("Invalid movement!"),
+        }
+    }
+}
+
 #[derive(Clone)]
 struct Knot {
     x: i32,
@@ -148,20 +163,9 @@ fn parse(input: impl BufRead) -> io::Result<Vec<(String, String)>> {
 fn part_1(movements: &Vec<(String, String)>) -> Option<usize> {
     let mut rope = Rope::new(2);
 
-    for (direction, steps) in movements.into_iter() {
-        let steps_i32 = steps.parse::<i32>().unwrap();
-        let direction_str = direction.as_str();
-
-        let motion: Move = match direction_str {
-            "U" => Move::Up(steps_i32),
-            "D" => Move::Down(steps_i32),
-            "L" => Move::Left(steps_i32),
-            "R" => Move::Right(steps_i32),
-            _ => panic!("Invalid movement!"),
-        };
-
-        rope.move_head(motion);
-    }
+    movements
+        .into_iter()
+        .for_each(|x| rope.move_head(Move::from(x)));
 
     Some(rope.tracker.len())
 }
@@ -169,20 +173,9 @@ fn part_1(movements: &Vec<(String, String)>) -> Option<usize> {
 fn part_2(movements: &Vec<(String, String)>) -> Option<usize> {
     let mut rope = Rope::new(10);
 
-    for (direction, steps) in movements.into_iter() {
-        let steps_i32 = steps.parse::<i32>().unwrap();
-        let direction_str = direction.as_str();
-
-        let motion: Move = match direction_str {
-            "U" => Move::Up(steps_i32),
-            "D" => Move::Down(steps_i32),
-            "L" => Move::Left(steps_i32),
-            "R" => Move::Right(steps_i32),
-            _ => panic!("Invalid movement!"),
-        };
-
-        rope.move_head(motion);
-    }
+    movements
+        .into_iter()
+        .for_each(|x| rope.move_head(Move::from(x)));
 
     Some(rope.tracker.len())
 }

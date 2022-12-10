@@ -50,13 +50,6 @@ impl Knot {
     fn get_pos(&self) -> (i32, i32) {
         (self.x, self.y)
     }
-
-    fn set_pos(&mut self, pos: (i32, i32)) -> (i32, i32) {
-        let prev_pos: (i32, i32) = self.get_pos();
-        (self.x, self.y) = pos;
-
-        prev_pos
-    }
 }
 
 struct Rope {
@@ -66,10 +59,10 @@ struct Rope {
 }
 
 impl Rope {
-    fn new(n_tails: usize) -> Self {
+    fn new(n_knots: usize) -> Self {
         let mut rope = Rope {
-            knots: vec![Knot::new(); n_tails],
-            tracked_knot_id: n_tails - 1,
+            knots: vec![Knot::new(); n_knots],
+            tracked_knot_id: n_knots - 1,
             tracker: HashSet::new(),
         };
 
@@ -82,42 +75,47 @@ impl Rope {
         match motion {
             Move::Up(x) => {
                 for _ in 0..x {
-                    let prev_pos = self.knots[0].get_pos();
-                    self.knots[0].set_pos((prev_pos.0, prev_pos.1 + 1));
-                    self.move_knots(prev_pos);
+                    self.knots[0].y += 1;
+                    self.move_knots();
                 }
             }
             Move::Down(x) => {
                 for _ in 0..x {
-                    let prev_pos = self.knots[0].get_pos();
-                    self.knots[0].set_pos((prev_pos.0, prev_pos.1 - 1));
-                    self.move_knots(prev_pos);
+                    self.knots[0].y -= 1;
+                    self.move_knots();
                 }
             }
             Move::Left(x) => {
                 for _ in 0..x {
-                    let prev_pos = self.knots[0].get_pos();
-                    self.knots[0].set_pos((prev_pos.0 - 1, prev_pos.1));
-                    self.move_knots(prev_pos);
+                    self.knots[0].x -= 1;
+                    self.move_knots();
                 }
             }
             Move::Right(x) => {
                 for _ in 0..x {
-                    let prev_pos = self.knots[0].get_pos();
-                    self.knots[0].set_pos((prev_pos.0 + 1, prev_pos.1));
-                    self.move_knots(prev_pos);
+                    self.knots[0].x += 1;
+                    self.move_knots();
                 }
             }
         };
     }
 
-    fn move_knots(&mut self, prev_pos: (i32, i32)) -> () {
-        let mut prev_pos = prev_pos;
+    fn move_knots(&mut self) -> () {
         for i in 1..self.knots.len() {
-            match is_adjacent(self.knots[i - 1].get_pos(), self.knots[i].get_pos()) {
-                true => (),
-                false => {
-                    prev_pos = self.knots[i].set_pos(prev_pos);
+            let (dx, dy) = get_relative_pos(&self.knots[i - 1], &self.knots[i]);
+            if dx.abs() == 2 {
+                if dy == 0 {
+                    self.knots[i].x = self.knots[i].x + dx.signum();
+                } else {
+                    self.knots[i].x = self.knots[i].x + dx.signum();
+                    self.knots[i].y = self.knots[i].y + dy;
+                }
+            } else if dy.abs() == 2 {
+                if dx == 0 {
+                    self.knots[i].y = self.knots[i].y + dy.signum();
+                } else {
+                    self.knots[i].y = self.knots[i].y + dy.signum();
+                    self.knots[i].x = self.knots[i].x + dx;
                 }
             }
         }
@@ -130,8 +128,8 @@ impl Rope {
     }
 }
 
-fn is_adjacent(pos1: (i32, i32), pos2: (i32, i32)) -> bool {
-    (pos1.0 - pos2.0).abs() <= 1 && (pos1.1 - pos2.1).abs() <= 1
+fn get_relative_pos(knot_1: &Knot, knot_2: &Knot) -> (i32, i32) {
+    (knot_1.x - knot_2.x, knot_1.y - knot_2.y)
 }
 
 fn parse(input: impl BufRead) -> io::Result<Vec<(String, String)>> {
@@ -168,6 +166,23 @@ fn part_1(movements: &Vec<(String, String)>) -> Option<usize> {
     Some(rope.tracker.len())
 }
 
-fn part_2(grid: &Vec<(String, String)>) -> Option<u32> {
-    unimplemented!();
+fn part_2(movements: &Vec<(String, String)>) -> Option<usize> {
+    let mut rope = Rope::new(10);
+
+    for (direction, steps) in movements.into_iter() {
+        let steps_i32 = steps.parse::<i32>().unwrap();
+        let direction_str = direction.as_str();
+
+        let motion: Move = match direction_str {
+            "U" => Move::Up(steps_i32),
+            "D" => Move::Down(steps_i32),
+            "L" => Move::Left(steps_i32),
+            "R" => Move::Right(steps_i32),
+            _ => panic!("Invalid movement!"),
+        };
+
+        rope.move_head(motion);
+    }
+
+    Some(rope.tracker.len())
 }

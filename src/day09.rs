@@ -113,6 +113,8 @@ impl Rope {
                 }
             }
         };
+
+        self.track();
     }
 
     fn move_knots(&mut self) -> () {

@@ -36,72 +36,102 @@ enum Move {
     Right(i32),
 }
 
+#[derive(Clone)]
+struct Knot {
+    x: i32,
+    y: i32,
+}
+
+impl Knot {
+    fn new() -> Self {
+        Knot { x: 0, y: 0 }
+    }
+
+    fn get_pos(&self) -> (i32, i32) {
+        (self.x, self.y)
+    }
+
+    fn set_pos(&mut self, pos: (i32, i32)) -> (i32, i32) {
+        let prev_pos: (i32, i32) = self.get_pos();
+        (self.x, self.y) = pos;
+
+        prev_pos
+    }
+}
+
 struct Rope {
-    head_pos: (i32, i32),
-    tail_pos: (i32, i32),
-    tail_set: HashSet<(i32, i32)>,
+    knots: Vec<Knot>,
+    tracked_knot_id: usize,
+    tracker: HashSet<(i32, i32)>,
 }
 
 impl Rope {
-    fn new() -> Self {
+    fn new(n_tails: usize) -> Self {
         let mut rope = Rope {
-            head_pos: (0, 0),
-            tail_pos: (0, 0),
-            tail_set: HashSet::new(),
+            knots: vec![Knot::new(); n_tails],
+            tracked_knot_id: n_tails - 1,
+            tracker: HashSet::new(),
         };
 
-        rope.tail_set.insert((0, 0));
+        rope.track();
 
         rope
     }
 
-    fn motion(&mut self, motion: Move) -> () {
+    fn move_head(&mut self, motion: Move) -> () {
         match motion {
             Move::Up(x) => {
                 for _ in 0..x {
-                    self.head_pos.1 += 1;
-                    self.move_tail((self.head_pos.0, self.head_pos.1 - 1));
-                    println!("H: {:?}, T: {:?}", self.head_pos, self.tail_pos);
+                    let prev_pos = self.knots[0].get_pos();
+                    self.knots[0].set_pos((prev_pos.0, prev_pos.1 + 1));
+                    self.move_knots(prev_pos);
                 }
             }
             Move::Down(x) => {
                 for _ in 0..x {
-                    self.head_pos.1 -= 1;
-                    self.move_tail((self.head_pos.0, self.head_pos.1 + 1));
-                    println!("H: {:?}, T: {:?}", self.head_pos, self.tail_pos);
+                    let prev_pos = self.knots[0].get_pos();
+                    self.knots[0].set_pos((prev_pos.0, prev_pos.1 - 1));
+                    self.move_knots(prev_pos);
                 }
             }
             Move::Left(x) => {
                 for _ in 0..x {
-                    self.head_pos.0 -= 1;
-                    self.move_tail((self.head_pos.0 + 1, self.head_pos.1));
-                    println!("H: {:?}, T: {:?}", self.head_pos, self.tail_pos);
+                    let prev_pos = self.knots[0].get_pos();
+                    self.knots[0].set_pos((prev_pos.0 - 1, prev_pos.1));
+                    self.move_knots(prev_pos);
                 }
             }
             Move::Right(x) => {
                 for _ in 0..x {
-                    self.head_pos.0 += 1;
-                    self.move_tail((self.head_pos.0 - 1, self.head_pos.1));
-                    println!("H: {:?}, T: {:?}", self.head_pos, self.tail_pos);
+                    let prev_pos = self.knots[0].get_pos();
+                    self.knots[0].set_pos((prev_pos.0 + 1, prev_pos.1));
+                    self.move_knots(prev_pos);
                 }
             }
         };
     }
 
-    fn move_tail(&mut self, pos: (i32, i32)) -> () {
-        match self.is_adjacent() {
-            true => (),
-            false => {
-                self.tail_pos = pos;
-                self.tail_set.insert(self.tail_pos);
+    fn move_knots(&mut self, prev_pos: (i32, i32)) -> () {
+        let mut prev_pos = prev_pos;
+        for i in 1..self.knots.len() {
+            match is_adjacent(self.knots[i - 1].get_pos(), self.knots[i].get_pos()) {
+                true => (),
+                false => {
+                    prev_pos = self.knots[i].set_pos(prev_pos);
+                }
             }
         }
+        self.track();
     }
 
-    fn is_adjacent(&self) -> bool {
-        (self.head_pos.0 - self.tail_pos.0).abs() <= 1
-            && (self.head_pos.1 - self.tail_pos.1).abs() <= 1
+    fn track(&mut self) -> () {
+        self.tracker
+            .insert(self.knots[self.tracked_knot_id].get_pos());
     }
+}
+
+fn is_adjacent(pos1: (i32, i32), pos2: (i32, i32)) -> bool {
+    (pos1.0 - pos2.0).abs() <= 1 && (pos1.1 - pos2.1).abs() <= 1
 }
 
 fn parse(input: impl BufRead) -> io::Result<Vec<(String, String)>> {
@@ -118,7 +148,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<(String, String)>> {
 }
 
 fn part_1(movements: &Vec<(String, String)>) -> Option<usize> {
-    let mut rope = Rope::new();
+    let mut rope = Rope::new(2);
 
     for (direction, steps) in movements.into_iter() {
         let steps_i32 = steps.parse::<i32>().unwrap();
@@ -132,10 +162,10 @@ fn part_1(movements: &Vec<(String, String)>) -> Option<usize> {
             _ => panic!("Invalid movement!"),
         };
 
-        rope.motion(motion);
+        rope.move_head(motion);
     }
 
-    Some(rope.tail_set.len())
+    Some(rope.tracker.len())
 }
 
 fn part_2(grid: &Vec<(String, String)>) -> Option<u32> {

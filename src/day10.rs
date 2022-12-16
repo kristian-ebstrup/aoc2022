@@ -27,23 +27,52 @@ pub fn solve(input: impl BufRead, part: u8) -> io::Result<()> {
     Ok(())
 }
 
-fn parse(input: impl BufRead) -> io::Result<Vec<Vec<u8>>> {
-    // collect grid
+fn parse(input: impl BufRead) -> io::Result<Vec<Vec<String>>> {
+    // parse commands
     Ok(input
         .lines()
         .map(|x| {
             x.unwrap()
-                .chars()
-                .map(|x| x.to_string().parse::<u8>().unwrap())
-                .collect::<Vec<u8>>()
+                .split_whitespace()
+                .map(|s| s.to_string())
+                .collect()
         })
         .collect())
 }
 
-fn part_1(grid: &Vec<Vec<u8>>) -> Option<u64> {
-    unimplemented!();
+fn part_1(commands: &Vec<Vec<String>>) -> Option<i32> {
+    let mut cycle: i32 = 0;
+    let mut x_register: i32 = 1;
+    let mut sum: i32 = 0;
+    let mut counter: i32 = 0;
+
+    for command in commands.iter() {
+        match command.len() {
+            1 => {
+                cycle += 1;
+                if cycle - (20 + counter * 40) == 0 {
+                    sum += cycle * x_register;
+                    counter += 1;
+                }
+            }
+            2 => {
+                for _ in 0..2 {
+                    cycle += 1;
+                    if cycle - (20 + counter * 40) == 0 {
+                        sum += cycle * x_register;
+                        counter += 1;
+                    }
+                }
+
+                x_register += command[1].parse::<i32>().unwrap();
+            }
+            _ => panic!("Invalid length!"),
+        }
+    }
+
+    Some(sum)
 }
 
-fn part_2(grid: &Vec<Vec<u8>>) -> Option<u32> {
-    unimplemented!();
+fn part_2(commands: &Vec<Vec<String>>) -> Option<u32> {
+    unimplemented!()
 }

@@ -34,7 +34,7 @@ fn parse(input: impl BufRead) -> io::Result<Vec<String>> {
      * is a case-sensitive item. */
     let rucksacks: Vec<String> = input
         .lines()
-        .map(|l| l.expect("Failed to read line").chars().collect())
+        .map(|l| l.unwrap().chars().collect())
         .collect();
 
     Ok(rucksacks)

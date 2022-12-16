@@ -120,23 +120,19 @@ impl Rope {
     fn move_knots(&mut self) -> () {
         for i in 1..self.knots.len() {
             let (dx, dy) = get_relative_pos(&self.knots[i - 1], &self.knots[i]);
-            if dx.abs() == 2 {
+            if dx.abs() == 2 || dy.abs() == 2 {
                 if dy == 0 {
                     self.knots[i].x = self.knots[i].x + dx.signum();
+                } else if dx == 0 {
+                    self.knots[i].y = self.knots[i].y + dy.signum();
                 } else {
                     self.knots[i].x = self.knots[i].x + dx.signum();
-                    self.knots[i].y = self.knots[i].y + dy;
-                }
-            } else if dy.abs() == 2 {
-                if dx == 0 {
                     self.knots[i].y = self.knots[i].y + dy.signum();
-                } else {
-                    self.knots[i].y = self.knots[i].y + dy.signum();
-                    self.knots[i].x = self.knots[i].x + dx;
                 }
             }
+
+            self.track();
         }
-        self.track();
     }
 
     fn track(&mut self) -> () {

@@ -42,11 +42,12 @@ fn parse(input: impl BufRead) -> io::Result<Vec<Vec<String>>> {
         .collect())
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Monkey {
     items: Vec<u32>,
     operation: (String, String),
-    test: (u32, u32, u32),
+    test: (u32, usize, usize),
+    inspections: usize,
 }
 
 impl Monkey {
@@ -85,14 +86,52 @@ impl Monkey {
         // read test
         let test = (
             state.2[1].parse::<u32>().unwrap(),
-            state.3[3].parse::<u32>().unwrap(),
-            state.4[3].parse::<u32>().unwrap(),
+            state.3[3].parse::<usize>().unwrap(),
+            state.4[3].parse::<usize>().unwrap(),
         );
 
         Monkey {
             items,
             operation,
             test,
+            inspections: 0,
+        }
+    }
+
+    fn inspect_and_throw(&mut self) -> Option<(usize, u32)> {
+        self.inspections += 1;
+        let mut item = match self.items.pop() {
+            Some(x) => x,
+            None => return None,
+        };
+
+        item = match self.operation.0.as_str() {
+            "+" => {
+                (item
+                    + match self.operation.1.as_str() {
+                        "old" => item,
+                        _ => self.operation.1.parse::<u32>().unwrap(),
+                    })
+                    / 3
+            }
+            "*" => {
+                (item
+                    * match self.operation.1.as_str() {
+                        "old" => item,
+                        _ => self.operation.1.parse::<u32>().unwrap(),
+                    })
+                    / 3
+            }
+            _ => panic!(
+                "Invalid operation ({}, but should be \"+\" or \"*\")",
+                self.operation.0
+            ),
+        };
+
+        if item % self.test.0 == 0 {
+            Some((self.test.1, item))
+        } else {
+            Some((self.test.2, item))
         }
     }
 }
@@ -112,28 +151,46 @@ impl Monkeys {
     fn add(&mut self, monkey: Monkey) {
         self.monkeys.push(monkey);
     }
+
+    fn round(&mut self) {
+        for i in 0..self.monkeys.len() {
+            while !self.monkeys[i].items.is_empty() {
+                match self.monkeys[i].inspect_and_throw() {
+                    Some((target, item)) => self.monkeys[target].items.push(item),
+                    None => panic!(),
+                }
+            }
+        }
+    }
 }
 
-fn part_1(input: &Vec<Vec<String>>) -> Option<i32> {
+fn part_1(input: &Vec<Vec<String>>) -> Option<usize> {
     let mut monkeys: Monkeys = Monkeys::new();
 
-    for (i, state) in input
-        .iter()
-        .tuples::<(
-            &Vec<String>,
-            &Vec<String>,
-            &Vec<String>,
-            &Vec<String>,
-            &Vec<String>,
-        )>()
-        .enumerate()
-    {
+    for state in input.iter().tuples::<(
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+    )>() {
         monkeys.add(Monkey::new(state));
     }
 
-    println!("{:?}", monkeys);
+    for _ in 0..20 {
+        monkeys.round();
+    }
 
-    Some(0)
+    let mut inspections = monkeys
+        .monkeys
+        .iter()
+        .map(|x| x.inspections)
+        .collect::<Vec<usize>>();
+    inspections.sort_unstable();
+
+    let monkey_business = inspections[inspections.len() - 1] * inspections[inspections.len() - 2];
+
+    Some(monkey_business)
 }
 
 fn part_2(commands: &Vec<Vec<String>>) -> Option<u32> {

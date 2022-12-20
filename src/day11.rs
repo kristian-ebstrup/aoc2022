@@ -44,9 +44,9 @@ fn parse(input: impl BufRead) -> io::Result<Vec<Vec<String>>> {
 
 #[derive(Debug, Clone)]
 struct Monkey {
-    items: Vec<u32>,
+    items: Vec<u64>,
     operation: (String, String),
-    test: (u32, usize, usize),
+    test: (u64, usize, usize),
     inspections: usize,
 }
 
@@ -78,14 +78,14 @@ impl Monkey {
          * Everything else is unimportant. */
 
         // read items
-        let items = state.0.iter().map(|s| s.parse::<u32>().unwrap()).collect();
+        let items = state.0.iter().map(|s| s.parse::<u64>().unwrap()).collect();
 
         // read operation
         let operation = (state.1[2].clone(), state.1[3].clone());
 
         // read test
         let test = (
-            state.2[1].parse::<u32>().unwrap(),
+            state.2[1].parse::<u64>().unwrap(),
             state.3[3].parse::<usize>().unwrap(),
             state.4[3].parse::<usize>().unwrap(),
         );
@@ -98,7 +98,7 @@ impl Monkey {
         }
     }
 
-    fn inspect_and_throw(&mut self) -> Option<(usize, u32)> {
+    fn inspect_and_throw(&mut self, relief: u64, supermodulo: u64) -> Option<(usize, u64)> {
         self.inspections += 1;
         let mut item = match self.items.pop() {
             Some(x) => x,
@@ -110,22 +110,27 @@ impl Monkey {
                 (item
                     + match self.operation.1.as_str() {
                         "old" => item,
-                        _ => self.operation.1.parse::<u32>().unwrap(),
+                        _ => self.operation.1.parse::<u64>().unwrap(),
                     })
-                    / 3
+                    / relief
             }
             "*" => {
                 (item
                     * match self.operation.1.as_str() {
                         "old" => item,
-                        _ => self.operation.1.parse::<u32>().unwrap(),
+                        _ => self.operation.1.parse::<u64>().unwrap(),
                     })
-                    / 3
+                    / relief
             }
             _ => panic!(
                 "Invalid operation ({}, but should be \"+\" or \"*\")",
                 self.operation.0
             ),
+        };
+
+        item = match supermodulo {
+            0 => item,
+            _ => item % supermodulo,
         };
 
         if item % self.test.0 == 0 {
@@ -139,12 +144,14 @@ impl Monkey {
 #[derive(Debug)]
 struct Monkeys {
     monkeys: Vec<Monkey>,
+    supermodulo: u64,
 }
 
 impl Monkeys {
     fn new() -> Self {
         Monkeys {
             monkeys: Vec::new(),
+            supermodulo: 0,
         }
     }
 
@@ -152,10 +159,14 @@ impl Monkeys {
         self.monkeys.push(monkey);
     }
 
-    fn round(&mut self) {
+    fn compute_supermodulo(&mut self) {
+        self.supermodulo = self.monkeys.iter().map(|x| x.test.0).product();
+    }
+
+    fn round(&mut self, relief: u64) {
         for i in 0..self.monkeys.len() {
             while !self.monkeys[i].items.is_empty() {
-                match self.monkeys[i].inspect_and_throw() {
+                match self.monkeys[i].inspect_and_throw(relief, self.supermodulo) {
                     Some((target, item)) => self.monkeys[target].items.push(item),
                     None => panic!(),
                 }
@@ -178,7 +189,7 @@ fn part_1(input: &Vec<Vec<String>>) -> Option<usize> {
     }
 
     for _ in 0..20 {
-        monkeys.round();
+        monkeys.round(3);
     }
 
     let mut inspections = monkeys
@@ -193,6 +204,33 @@ fn part_1(input: &Vec<Vec<String>>) -> Option<usize> {
     Some(monkey_business)
 }
 
-fn part_2(commands: &Vec<Vec<String>>) -> Option<u32> {
-    Some(0)
+fn part_2(input: &Vec<Vec<String>>) -> Option<usize> {
+    let mut monkeys: Monkeys = Monkeys::new();
+
+    for state in input.iter().tuples::<(
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+        &Vec<String>,
+    )>() {
+        monkeys.add(Monkey::new(state));
+    }
+
+    monkeys.compute_supermodulo();
+
+    for _ in 0..10000 {
+        monkeys.round(1);
+    }
+
+    let mut inspections = monkeys
+        .monkeys
+        .iter()
+        .map(|x| x.inspections)
+        .collect::<Vec<usize>>();
+    inspections.sort_unstable();
+
+    let monkey_business = inspections[inspections.len() - 1] * inspections[inspections.len() - 2];
+
+    Some(monkey_business)
 }
